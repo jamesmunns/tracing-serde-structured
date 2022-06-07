@@ -131,13 +131,13 @@ rustflags = ["--cfg", "tracing_unstable"]
 [feature flags]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 [`valuable`]: https://crates.io/crates/valuable
 
-## License
-
-This project is licensed under the [MIT license](LICENSE).
-
 ## Provenance
 
 This crate is a fork of the [`tracing-serde`] library, as provided by the Tokio project.
+
+## License
+
+This project is licensed under the [MIT license](LICENSE).
 
 ### Contribution
 
