@@ -1,25 +1,29 @@
-//! # tracing-serde
+//! # tracing-serde-structured
 //!
-//! An adapter for serializing [`tracing`] types using [`serde`].
+//! An alternative, structured, adapter for serializing [`tracing`] types using [`serde`].
 //!
 //! [![Documentation][docs-badge]][docs-url]
-//! [![Documentation (master)][docs-master-badge]][docs-master-url]
 //!
-//! [docs-badge]: https://docs.rs/tracing-serde/badge.svg
-//! [docs-url]: https://docs.rs/tracing-serde
-//! [docs-master-badge]: https://img.shields.io/badge/docs-master-blue
-//! [docs-master-url]: https://tracing-rs.netlify.com/tracing_serde
+//! [docs-badge]: https://docs.rs/tracing-serde-structured/badge.svg
+//! [docs-url]: https://docs.rs/tracing-serde-structured
 //!
 //! ## Overview
 //!
 //! [`tracing`] is a framework for instrumenting Rust programs to collect
-//! scoped, structured, and async-aware diagnostics.`tracing-serde` enables
+//! scoped, structured, and async-aware diagnostics.`tracing-serde-structured` enables
 //! serializing `tracing` types using [`serde`].
+//!
+//! Unlike the upstream [`tracing-serde`] crate, `tracing-serde-structured` does this
+//! in a structured manner, making the data compatible with binary formats such as [`postcard`],
+//! while also allowing deserialization of the data.
+//!
+//! [`tracing-serde`]: https://docs.rs/tracing-serde
+//! [`postcard`]: https://docs.rs/postcard
 //!
 //! Traditional logging is based on human-readable text messages.
 //! `tracing` gives us machine-readable structured diagnostic
 //! information. This lets us interact with diagnostic data
-//! programmatically. With `tracing-serde`, you can implement a
+//! programmatically. With `tracing-serde-structured`, you can implement a
 //! `Subscriber` to serialize your `tracing` types and make use of the
 //! existing ecosystem of `serde` serializers to talk with distributed
 //! tracing systems.
@@ -32,10 +36,6 @@
 //! The `tracing` crate provides the APIs necessary for instrumenting
 //! libraries and applications to emit trace data.
 //!
-//! *Compiler support: [requires `rustc` 1.49+][msrv]*
-//!
-//! [msrv]: #supported-rust-versions
-//!
 //! ## Usage
 //!
 //! First, add this to your `Cargo.toml`:
@@ -43,13 +43,13 @@
 //! ```toml
 //! [dependencies]
 //! tracing = "0.1"
-//! tracing-serde = "0.1"
+//! tracing-serde-structured = "0.1"
 //! ```
 //!
 //! Next, add this to your crate:
 //!
 //! ```rust
-//! use tracing_serde::AsSerde;
+//! use tracing_serde_structured::AsSerde;
 //! ```
 //!
 //! Please read the [`tracing` documentation](https://docs.rs/tracing/latest/tracing/index.html)
@@ -59,8 +59,6 @@
 //! which enables serializing the `Attributes`, `Event`, `Id`, `Metadata`,
 //! and `Record` `tracing` values.
 //!
-//! For the full example, please see the [examples](../examples) folder.
-//!
 //! Implement a `Subscriber` to format the serialization of `tracing`
 //! types how you'd like.
 //!
@@ -68,7 +66,7 @@
 //! # use tracing_core::{Subscriber, Metadata, Event};
 //! # use tracing_core::span::{Attributes, Id, Record};
 //! # use std::sync::atomic::{AtomicUsize, Ordering};
-//! use tracing_serde::AsSerde;
+//! use tracing_serde_structured::AsSerde;
 //! use serde_json::json;
 //!
 //! pub struct JsonSubscriber {
@@ -152,23 +150,23 @@
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 //! [`valuable`]: https://crates.io/crates/valuable
 //!
-//! ## Supported Rust Versions
+//! ## License
 //!
-//! Tracing is built against the latest stable release. The minimum supported
-//! version is 1.51. The current Tracing version is not guaranteed to build on
-//! Rust versions earlier than the minimum supported version.
+//! This project is licensed under the [MIT license](LICENSE).
 //!
-//! Tracing follows the same compiler support policies as the rest of the Tokio
-//! project. The current stable Rust compiler and the three most recent minor
-//! versions before it will always be supported. For example, if the current
-//! stable compiler version is 1.45, the minimum supported version will not be
-//! increased past 1.42, three minor versions prior. Increasing the minimum
-//! supported compiler version is not considered a semver breaking change as
-//! long as doing so complies with this policy.
+//! ## Provenance
+//!
+//! This crate is a fork of the [`tracing-serde`] library, as provided by the Tokio project.
+//!
+//! ### Contribution
+//!
+//! Unless you explicitly state otherwise, any contribution intentionally submitted
+//! for inclusion in this project by you, shall be licensed as MIT, without any additional
+//! terms or conditions.
 //!
 //! [`tracing`]: https://crates.io/crates/tracing
 //! [`serde`]: https://crates.io/crates/serde
-#![doc(html_root_url = "https://docs.rs/tracing-serde/0.1.3")]
+#![doc(html_root_url = "https://docs.rs/tracing-serde-structured/0.1.3")]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/tokio-rs/tracing/master/assets/logo-type.png",
     html_favicon_url = "https://raw.githubusercontent.com/tokio-rs/tracing/master/assets/favicon.ico",

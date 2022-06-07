@@ -1,29 +1,29 @@
-![Tracing — Structured, application-level diagnostics][splash]
+# tracing-serde-structured
 
-[splash]: https://raw.githubusercontent.com/tokio-rs/tracing/master/assets/splash.svg
-
-# tracing-serde
-
-An adapter for serializing [`tracing`] types using [`serde`].
+An alternative, structured, adapter for serializing [`tracing`] types using [`serde`].
 
 [![Documentation][docs-badge]][docs-url]
-[![Documentation (master)][docs-master-badge]][docs-master-url]
 
-[docs-badge]: https://docs.rs/tracing-serde/badge.svg
-[docs-url]: https://docs.rs/tracing-serde
-[docs-master-badge]: https://img.shields.io/badge/docs-master-blue
-[docs-master-url]: https://tracing-rs.netlify.com/tracing_serde
+[docs-badge]: https://docs.rs/tracing-serde-structured/badge.svg
+[docs-url]: https://docs.rs/tracing-serde-structured
 
 ## Overview
 
 [`tracing`] is a framework for instrumenting Rust programs to collect
-scoped, structured, and async-aware diagnostics.`tracing-serde` enables
+scoped, structured, and async-aware diagnostics.`tracing-serde-structured` enables
 serializing `tracing` types using [`serde`].
+
+Unlike the upstream [`tracing-serde`] crate, `tracing-serde-structured` does this
+in a structured manner, making the data compatible with binary formats such as [`postcard`],
+while also allowing deserialization of the data.
+
+[`tracing-serde`]: https://docs.rs/tracing-serde
+[`postcard`]: https://docs.rs/postcard
 
 Traditional logging is based on human-readable text messages.
 `tracing` gives us machine-readable structured diagnostic
 information. This lets us interact with diagnostic data
-programmatically. With `tracing-serde`, you can implement a
+programmatically. With `tracing-serde-structured`, you can implement a
 `Subscriber` to serialize your `tracing` types and make use of the
 existing ecosystem of `serde` serializers to talk with distributed
 tracing systems.
@@ -36,10 +36,6 @@ and tracing data to monitor your services in production.
 The `tracing` crate provides the APIs necessary for instrumenting
 libraries and applications to emit trace data.
 
-*Compiler support: [requires `rustc` 1.49+][msrv]*
-
-[msrv]: #supported-rust-versions
-
 ## Usage
 
 First, add this to your `Cargo.toml`:
@@ -47,7 +43,7 @@ First, add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 tracing = "0.1"
-tracing-serde = "0.1"
+tracing-serde-structured = "0.1"
 ```
 
 Next, add this to your crate:
@@ -62,8 +58,6 @@ for more information on how to create trace data.
 This crate provides the `as_serde` function, via the `AsSerde` trait,
 which enables serializing the `Attributes`, `Event`, `Id`, `Metadata`,
 and `Record` `tracing` values.
-
-For the full example, please see the [examples](../examples) folder.
 
 Implement a `Subscriber` to format the serialization of `tracing`
 types how you'd like.
@@ -104,32 +98,51 @@ The following crate feature flags are available:
 
   ```toml
   [dependencies]
-  tracing-serde = { version = "0.1", default-features = false }
+  tracing-serde-structured = { version = "0.1", default-features = false }
   ```
 
-TODO(AJM): Add unstable docs from "lib.rs" header?
-## Supported Rust Versions
+### Unstable Features
 
-Tracing is built against the latest stable release. The minimum supported
-version is 1.51. The current Tracing version is not guaranteed to build on Rust
-versions earlier than the minimum supported version.
+These feature flags enable **unstable** features. The public API may break in 0.1.x
+releases. To enable these features, the `--cfg tracing_unstable` must be passed to
+`rustc` when compiling.
 
-Tracing follows the same compiler support policies as the rest of the Tokio
-project. The current stable Rust compiler and the three most recent minor
-versions before it will always be supported. For example, if the current stable
-compiler version is 1.45, the minimum supported version will not be increased
-past 1.42, three minor versions prior. Increasing the minimum supported compiler
-version is not considered a semver breaking change as long as doing so complies
-with this policy.
+The following unstable feature flags are currently available:
+
+* `valuable`: Enables [`Visit::record_value`] implementations, for
+  serializing values recorded using the [`valuable`] crate.
+
+#### Enabling Unstable Features
+
+The easiest way to set the `tracing_unstable` cfg is to use the `RUSTFLAGS`
+env variable when running `cargo` commands:
+
+```shell
+RUSTFLAGS="--cfg tracing_unstable" cargo build
+```
+Alternatively, the following can be added to the `.cargo/config` file in a
+project to automatically enable the cfg flag for that project:
+
+```toml
+[build]
+rustflags = ["--cfg", "tracing_unstable"]
+```
+
+[feature flags]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
+[`valuable`]: https://crates.io/crates/valuable
 
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
 
+## Provenance
+
+This crate is a fork of the [`tracing-serde`] library, as provided by the Tokio project.
+
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in Tokio by you, shall be licensed as MIT, without any additional
+for inclusion in this project by you, shall be licensed as MIT, without any additional
 terms or conditions.
 
 [`tracing`]: https://crates.io/crates/tracing
