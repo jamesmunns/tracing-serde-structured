@@ -13,13 +13,6 @@
 //! scoped, structured, and async-aware diagnostics.`tracing-serde-structured` enables
 //! serializing `tracing` types using [`serde`].
 //!
-//! Unlike the upstream [`tracing-serde`] crate, `tracing-serde-structured` does this
-//! in a structured manner, making the data compatible with binary formats such as [`postcard`],
-//! while also allowing deserialization of the data.
-//!
-//! [`tracing-serde`]: https://docs.rs/tracing-serde
-//! [`postcard`]: https://docs.rs/postcard
-//!
 //! Traditional logging is based on human-readable text messages.
 //! `tracing` gives us machine-readable structured diagnostic
 //! information. This lets us interact with diagnostic data
@@ -35,6 +28,18 @@
 //!
 //! The `tracing` crate provides the APIs necessary for instrumenting
 //! libraries and applications to emit trace data.
+//!
+//! ## Differences with the `tracing-serde` crate
+//!
+//! Unlike the upstream [`tracing-serde`] crate, `tracing-serde-structured` does this serialization
+//! in a structured manner, making the data compatible with binary formats such as [`postcard`],
+//! while also allowing deserialization of the data.
+//!
+//! `tracing-serde-structured` is still compatible with serialization and deserialization to/from
+//! JSON, though it does change the format of the JSON data, meaning it is not a 100% drop-in replacement.
+//!
+//! [`tracing-serde`]: https://docs.rs/tracing-serde
+//! [`postcard`]: https://docs.rs/postcard
 //!
 //! ## Usage
 //!
