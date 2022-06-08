@@ -416,7 +416,7 @@ impl<'a> Serialize for SerializeRecord<'a> {
     {
         match self {
             SerializeRecord::Ser(serf) => {
-                let items = serf.record_len();
+                let items = serf.len();
 
                 let serializer = serializer.serialize_map(Some(items))?;
                 let mut ssv = SerdeMapVisitor::new(serializer);
