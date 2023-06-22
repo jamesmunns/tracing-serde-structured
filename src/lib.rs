@@ -396,6 +396,8 @@ pub struct SerializeAttributes<'a> {
     pub metadata: SerializeMetadata<'a>,
     pub parent: Option<SerializeId>,
     pub is_root: bool,
+    #[serde(borrow)]
+    pub fields: SerializeSpanFields<'a>,
 }
 
 type RecordMap<'a> = TracingMap<CowString<'a>, SerializeValue<'a>>;
@@ -480,6 +482,7 @@ pub enum SerializeRecordFields<'a> {
     De(RecordMap<'a>),
 }
 
+
 impl<'a> From<RecordMap<'a>> for SerializeRecordFields<'a> {
     fn from(other: RecordMap<'a>) -> Self {
         Self::De(other)
@@ -501,6 +504,62 @@ impl<'a> Serialize for SerializeRecordFields<'a> {
                 ssv.finish()
             }
             SerializeRecordFields::De(derf) => derf.serialize(serializer),
+        }
+    }
+}
+
+
+#[derive(Debug, Deserialize)]
+#[serde(from = "RecordMap<'a>")]
+pub enum SerializeSpanFields<'a> {
+    #[serde(borrow)]
+    Ser(&'a tracing_core::field::ValueSet<'a>),
+    De(RecordMap<'a>),
+}
+
+impl<'a> From<RecordMap<'a>> for SerializeSpanFields<'a> {
+    fn from(other: RecordMap<'a>) -> Self {
+        Self::De(other)
+    }
+}
+
+impl<'a> Serialize for SerializeSpanFields<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            SerializeSpanFields::Ser(serf) => {
+                let items = serf.len();
+
+                let serializer = serializer.serialize_map(Some(items))?;
+                let mut ssv = SerdeMapVisitor::new(serializer);
+                serf.record(&mut ssv);
+                ssv.finish()
+            }
+            SerializeSpanFields::De(derf) => derf.serialize(serializer),
+        }
+    }
+}
+
+/// SAFETY: If all data is 'static and/or owned, it is safe
+/// to send between threads.
+unsafe impl Send for SerializeSpanFields<'static> {}
+
+#[cfg(feature = "std")]
+impl<'a> SerializeSpanFields<'a> {
+    pub fn to_owned(&self) -> SerializeSpanFields<'static> {
+        match self {
+            SerializeSpanFields::Ser(e) => {
+                let mut hv = HashVisit(std::collections::HashMap::new());
+                e.record(&mut hv);
+                SerializeSpanFields::De(hv.0)
+            }
+            SerializeSpanFields::De(dsrf) => SerializeSpanFields::De(
+                dsrf.iter()
+                    .map(|(k, v)| (k.to_owned(), v.to_owned()))
+                    .collect(),
+            ),
         }
     }
 }
@@ -810,6 +869,7 @@ impl<'a> AsSerde<'a> for tracing_core::span::Attributes<'a> {
             metadata: self.metadata().as_serde(),
             parent: self.parent().map(|p| p.as_serde()),
             is_root: self.is_root(),
+            fields: SerializeSpanFields::Ser(self.values())
         }
     }
 }
@@ -825,6 +885,8 @@ impl<'a> SerializeAttributes<'a> {
             metadata: self.metadata.to_owned(),
             parent: self.parent.clone(),
             is_root: self.is_root,
+            fields: self.fields.to_owned()
+
         }
     }
 }
