@@ -29,7 +29,6 @@ hash32 = "0.2.1"
 
 [dependencies.tracing-core]
 git = "https://github.com/tokio-rs/tracing"
-branch = "master"
 default-features = false
 
 [dev-dependencies]
