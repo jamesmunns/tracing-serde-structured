@@ -185,7 +185,6 @@
     rust_2018_idioms,
     unreachable_pub,
     bad_style,
-    const_err,
     dead_code,
     improper_ctypes,
     non_shorthand_field_patterns,
@@ -222,7 +221,7 @@ use tracing_core::{
     span::{Attributes, Id, Record},
 };
 
-#[derive(Debug, Deserialize, Eq)]
+#[derive(Debug, Deserialize, Eq, PartialOrd, Ord)]
 #[serde(from = "&'a str")]
 pub enum CowString<'a> {
     Borrowed(&'a str),
@@ -301,7 +300,7 @@ type TracingMap<K, V> = heapless::FnvIndexMap<K, V, 32>;
 type TracingVec<T> = std::vec::Vec<T>;
 
 #[cfg(feature = "std")]
-type TracingMap<K, V> = std::collections::HashMap<K, V>;
+type TracingMap<K, V> = std::collections::BTreeMap<K, V>;
 
 #[derive(Debug, Deserialize)]
 #[serde(from = "TracingVec<CowString<'a>>")]
@@ -777,7 +776,7 @@ impl<'a> SerializeValue<'a> {
 }
 
 #[cfg(feature = "std")]
-struct HashVisit(std::collections::HashMap<CowString<'static>, SerializeValue<'static>>);
+struct HashVisit(std::collections::BTreeMap<CowString<'static>, SerializeValue<'static>>);
 
 #[cfg(feature = "std")]
 impl Visit for HashVisit {
@@ -833,7 +832,7 @@ impl<'a> SerializeRecordFields<'a> {
     pub fn to_owned(&self) -> SerializeRecordFields<'static> {
         match self {
             SerializeRecordFields::Ser(e) => {
-                let mut hv = HashVisit(std::collections::HashMap::new());
+                let mut hv = HashVisit(std::collections::BTreeMap::new());
                 e.record(&mut hv);
                 SerializeRecordFields::De(hv.0)
             }
@@ -925,7 +924,7 @@ impl<'a> SerializeRecord<'a> {
     pub fn to_owned(&self) -> SerializeRecord<'static> {
         match self {
             SerializeRecord::Ser(s) => {
-                let mut hv = HashVisit(std::collections::HashMap::new());
+                let mut hv = HashVisit(std::collections::BTreeMap::new());
                 s.record(&mut hv);
                 SerializeRecord::De(hv.0)
             },
