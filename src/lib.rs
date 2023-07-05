@@ -550,7 +550,7 @@ impl<'a> SerializeSpanFields<'a> {
     pub fn to_owned(&self) -> SerializeSpanFields<'static> {
         match self {
             SerializeSpanFields::Ser(e) => {
-                let mut hv = HashVisit(std::collections::HashMap::new());
+                let mut hv = HashVisit(std::collections::BTreeMap::new());
                 e.record(&mut hv);
                 SerializeSpanFields::De(hv.0)
             }
