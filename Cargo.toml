@@ -1,6 +1,6 @@
 [package]
 name = "tracing-serde-structured"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["James Munns <james@onevariable.com>"]
 license = "MIT"
 edition = "2021"
