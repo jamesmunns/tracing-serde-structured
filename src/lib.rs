@@ -192,7 +192,7 @@
     overflowing_literals,
     path_statements,
     patterns_in_fns_without_body,
-    private_in_public,
+    // private_in_public,
     unconditional_recursion,
     unused,
     unused_allocation,
@@ -220,6 +220,15 @@ use tracing_core::{
     metadata::{Level, Metadata},
     span::{Attributes, Id, Record},
 };
+
+#[cfg(feature = "postcard-schema")]
+impl<'a> postcard::experimental::schema::Schema for CowString<'a> {
+    const SCHEMA: &'static postcard::experimental::schema::NamedType =
+        &postcard::experimental::schema::NamedType {
+            name: "CowString",
+            ty: <&str>::SCHEMA.ty,
+        };
+}
 
 #[derive(Debug, Deserialize, Eq, PartialOrd, Ord)]
 #[serde(from = "&'a str")]
@@ -263,7 +272,7 @@ impl<'a> Hash for CowString<'a> {
 impl<'a> hash32::Hash for CowString<'a> {
     fn hash<H>(&self, state: &mut H)
     where
-        H: hash32::Hasher
+        H: hash32::Hasher,
     {
         <str as hash32::Hash>::hash(self.as_str(), state)
     }
@@ -334,7 +343,20 @@ impl<'a> From<TracingVec<CowString<'a>>> for SerializeFieldSet<'a> {
     }
 }
 
+#[cfg(feature = "postcard-schema")]
+impl<'a> postcard::experimental::schema::Schema for SerializeFieldSet<'a> {
+    const SCHEMA: &'static postcard::experimental::schema::NamedType =
+        &postcard::experimental::schema::NamedType {
+            name: "SerializeFieldSet",
+            ty: &postcard::experimental::schema::SdmTy::Seq(CowString::SCHEMA),
+        };
+}
+
 #[repr(usize)]
+#[cfg_attr(
+    feature = "postcard-schema",
+    derive(postcard::experimental::schema::Schema)
+)]
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum SerializeLevel {
@@ -361,11 +383,19 @@ pub enum SerializeLevel {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(
+    feature = "postcard-schema",
+    derive(postcard::experimental::schema::Schema)
+)]
 pub struct SerializeId {
     pub id: NonZeroU64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(
+    feature = "postcard-schema",
+    derive(postcard::experimental::schema::Schema)
+)]
 pub struct SerializeMetadata<'a> {
     #[serde(borrow)]
     pub name: CowString<'a>,
@@ -381,6 +411,10 @@ pub struct SerializeMetadata<'a> {
 
 /// Implements `serde::Serialize` to write `Event` data to a serializer.
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(
+    feature = "postcard-schema",
+    derive(postcard::experimental::schema::Schema)
+)]
 pub struct SerializeEvent<'a> {
     #[serde(borrow)]
     pub fields: SerializeRecordFields<'a>,
@@ -390,6 +424,10 @@ pub struct SerializeEvent<'a> {
 
 /// Implements `serde::Serialize` to write `Attributes` data to a serializer.
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(
+    feature = "postcard-schema",
+    derive(postcard::experimental::schema::Schema)
+)]
 pub struct SerializeAttributes<'a> {
     #[serde(borrow)]
     pub metadata: SerializeMetadata<'a>,
@@ -433,8 +471,24 @@ impl<'a> From<RecordMap<'a>> for SerializeRecord<'a> {
     }
 }
 
+#[cfg(feature = "postcard-schema")]
+impl<'a> postcard::experimental::schema::Schema for SerializeRecord<'a> {
+    const SCHEMA: &'static postcard::experimental::schema::NamedType =
+        &postcard::experimental::schema::NamedType {
+            name: "SerializeRecord",
+            ty: &postcard::experimental::schema::SdmTy::Map {
+                key: CowString::SCHEMA,
+                val: SerializeValue::SCHEMA,
+            },
+        };
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[non_exhaustive]
+#[cfg_attr(
+    feature = "postcard-schema",
+    derive(postcard::experimental::schema::Schema)
+)]
 pub enum SerializeValue<'a> {
     #[serde(borrow)]
     Debug(DebugRecord<'a>),
@@ -471,6 +525,15 @@ impl<'a> Serialize for DebugRecord<'a> {
     }
 }
 
+#[cfg(feature = "postcard-schema")]
+impl<'a> postcard::experimental::schema::Schema for DebugRecord<'a> {
+    const SCHEMA: &'static postcard::experimental::schema::NamedType =
+        &postcard::experimental::schema::NamedType {
+            name: "DebugRecord",
+            ty: CowString::SCHEMA.ty,
+        };
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(from = "RecordMap<'a>")]
 pub enum SerializeRecordFields<'a> {
@@ -502,6 +565,18 @@ impl<'a> Serialize for SerializeRecordFields<'a> {
             SerializeRecordFields::De(derf) => derf.serialize(serializer),
         }
     }
+}
+
+#[cfg(feature = "postcard-schema")]
+impl<'a> postcard::experimental::schema::Schema for SerializeRecordFields<'a> {
+    const SCHEMA: &'static postcard::experimental::schema::NamedType =
+        &postcard::experimental::schema::NamedType {
+            name: "SerializeRecordFields",
+            ty: &postcard::experimental::schema::SdmTy::Map {
+                key: CowString::SCHEMA,
+                val: SerializeValue::SCHEMA,
+            },
+        };
 }
 
 /// Implements `tracing_core::field::Visit` for some `serde::ser::SerializeMap`.
@@ -865,12 +940,12 @@ impl<'a> SerializeRecord<'a> {
                 let mut hv = HashVisit(std::collections::BTreeMap::new());
                 s.record(&mut hv);
                 SerializeRecord::De(hv.0)
-            },
-            SerializeRecord::De(d) => {
-                SerializeRecord::De(
-                    d.iter().map(|(k, v)| (k.to_owned(), v.to_owned())).collect()
-                )
-            },
+            }
+            SerializeRecord::De(d) => SerializeRecord::De(
+                d.iter()
+                    .map(|(k, v)| (k.to_owned(), v.to_owned()))
+                    .collect(),
+            ),
         }
     }
 }
@@ -879,12 +954,12 @@ impl<'a> AsSerde<'a> for Level {
     type Serializable = SerializeLevel;
 
     fn as_serde(&'a self) -> Self::Serializable {
-        match self {
-            &Level::ERROR => SerializeLevel::Error,
-            &Level::WARN => SerializeLevel::Warn,
-            &Level::INFO => SerializeLevel::Info,
-            &Level::DEBUG => SerializeLevel::Debug,
-            &Level::TRACE => SerializeLevel::Trace,
+        match *self {
+            Level::ERROR => SerializeLevel::Error,
+            Level::WARN => SerializeLevel::Warn,
+            Level::INFO => SerializeLevel::Info,
+            Level::DEBUG => SerializeLevel::Debug,
+            Level::TRACE => SerializeLevel::Trace,
         }
     }
 }
@@ -892,7 +967,7 @@ impl<'a> AsSerde<'a> for Level {
 #[cfg(feature = "std")]
 impl SerializeLevel {
     pub fn to_owned(&self) -> Self {
-        self.clone()
+        *self
     }
 }
 
