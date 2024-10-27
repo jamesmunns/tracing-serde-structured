@@ -43,7 +43,3 @@ valuable-serde = { version = "0.1.0", optional = true, default_features = false 
 
 [badges]
 maintenance = { status = "experimental" }
-
-[patch.crates-io]
-# NOTE: basing this on https://github.com/jamesmunns/postcard/pull/170 which adds owned schemas
-postcard = { git = "https://github.com/jamesmunns/postcard", rev = "8817efcc6f86e8abd19cf14dc3e0e1b466b0ab43" }
