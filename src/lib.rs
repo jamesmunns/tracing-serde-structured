@@ -222,9 +222,9 @@ use tracing_core::{
 };
 
 #[cfg(feature = "postcard-schema")]
-impl<'a> postcard::experimental::schema::Schema for CowString<'a> {
-    const SCHEMA: &'static postcard::experimental::schema::NamedType =
-        &postcard::experimental::schema::NamedType {
+impl<'a> postcard_schema::Schema for CowString<'a> {
+    const SCHEMA: &'static postcard_schema::schema::NamedType =
+        &postcard_schema::schema::NamedType {
             name: "CowString",
             ty: <&str>::SCHEMA.ty,
         };
@@ -344,18 +344,18 @@ impl<'a> From<TracingVec<CowString<'a>>> for SerializeFieldSet<'a> {
 }
 
 #[cfg(feature = "postcard-schema")]
-impl<'a> postcard::experimental::schema::Schema for SerializeFieldSet<'a> {
-    const SCHEMA: &'static postcard::experimental::schema::NamedType =
-        &postcard::experimental::schema::NamedType {
+impl<'a> postcard_schema::Schema for SerializeFieldSet<'a> {
+    const SCHEMA: &'static postcard_schema::schema::NamedType =
+        &postcard_schema::schema::NamedType {
             name: "SerializeFieldSet",
-            ty: &postcard::experimental::schema::SdmTy::Seq(CowString::SCHEMA),
+            ty: &postcard_schema::schema::DataModelType::Seq(CowString::SCHEMA),
         };
 }
 
 #[repr(usize)]
 #[cfg_attr(
     feature = "postcard-schema",
-    derive(postcard::experimental::schema::Schema)
+    derive(postcard_schema::Schema)
 )]
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
@@ -385,7 +385,7 @@ pub enum SerializeLevel {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(
     feature = "postcard-schema",
-    derive(postcard::experimental::schema::Schema)
+    derive(postcard_schema::Schema)
 )]
 pub struct SerializeId {
     pub id: NonZeroU64,
@@ -394,7 +394,7 @@ pub struct SerializeId {
 #[derive(Debug, Serialize, Deserialize)]
 #[cfg_attr(
     feature = "postcard-schema",
-    derive(postcard::experimental::schema::Schema)
+    derive(postcard_schema::Schema)
 )]
 pub struct SerializeMetadata<'a> {
     #[serde(borrow)]
@@ -413,7 +413,7 @@ pub struct SerializeMetadata<'a> {
 #[derive(Debug, Serialize, Deserialize)]
 #[cfg_attr(
     feature = "postcard-schema",
-    derive(postcard::experimental::schema::Schema)
+    derive(postcard_schema::Schema)
 )]
 pub struct SerializeEvent<'a> {
     #[serde(borrow)]
@@ -426,7 +426,7 @@ pub struct SerializeEvent<'a> {
 #[derive(Debug, Serialize, Deserialize)]
 #[cfg_attr(
     feature = "postcard-schema",
-    derive(postcard::experimental::schema::Schema)
+    derive(postcard_schema::Schema)
 )]
 pub struct SerializeAttributes<'a> {
     #[serde(borrow)]
@@ -472,11 +472,11 @@ impl<'a> From<RecordMap<'a>> for SerializeRecord<'a> {
 }
 
 #[cfg(feature = "postcard-schema")]
-impl<'a> postcard::experimental::schema::Schema for SerializeRecord<'a> {
-    const SCHEMA: &'static postcard::experimental::schema::NamedType =
-        &postcard::experimental::schema::NamedType {
+impl<'a> postcard_schema::Schema for SerializeRecord<'a> {
+    const SCHEMA: &'static postcard_schema::schema::NamedType =
+        &postcard_schema::schema::NamedType {
             name: "SerializeRecord",
-            ty: &postcard::experimental::schema::SdmTy::Map {
+            ty: &postcard_schema::schema::DataModelType::Map {
                 key: CowString::SCHEMA,
                 val: SerializeValue::SCHEMA,
             },
@@ -487,7 +487,7 @@ impl<'a> postcard::experimental::schema::Schema for SerializeRecord<'a> {
 #[non_exhaustive]
 #[cfg_attr(
     feature = "postcard-schema",
-    derive(postcard::experimental::schema::Schema)
+    derive(postcard_schema::Schema)
 )]
 pub enum SerializeValue<'a> {
     #[serde(borrow)]
@@ -526,9 +526,9 @@ impl<'a> Serialize for DebugRecord<'a> {
 }
 
 #[cfg(feature = "postcard-schema")]
-impl<'a> postcard::experimental::schema::Schema for DebugRecord<'a> {
-    const SCHEMA: &'static postcard::experimental::schema::NamedType =
-        &postcard::experimental::schema::NamedType {
+impl<'a> postcard_schema::Schema for DebugRecord<'a> {
+    const SCHEMA: &'static postcard_schema::schema::NamedType =
+        &postcard_schema::schema::NamedType {
             name: "DebugRecord",
             ty: CowString::SCHEMA.ty,
         };
@@ -568,11 +568,11 @@ impl<'a> Serialize for SerializeRecordFields<'a> {
 }
 
 #[cfg(feature = "postcard-schema")]
-impl<'a> postcard::experimental::schema::Schema for SerializeRecordFields<'a> {
-    const SCHEMA: &'static postcard::experimental::schema::NamedType =
-        &postcard::experimental::schema::NamedType {
+impl<'a> postcard_schema::Schema for SerializeRecordFields<'a> {
+    const SCHEMA: &'static postcard_schema::schema::NamedType =
+        &postcard_schema::schema::NamedType {
             name: "SerializeRecordFields",
-            ty: &postcard::experimental::schema::SdmTy::Map {
+            ty: &postcard_schema::schema::DataModelType::Map {
                 key: CowString::SCHEMA,
                 val: SerializeValue::SCHEMA,
             },
