@@ -1,6 +1,6 @@
 [package]
 name = "tracing-serde-structured"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["James Munns <james@onevariable.com>"]
 license = "MIT"
 edition = "2021"
@@ -30,7 +30,7 @@ heapless = { version = "0.7.10", features = ["serde"] }
 hash32 = "0.2.1"
 
 [dependencies.postcard-schema]
-version = "0.1"
+version = "0.2"
 optional = true
 features = ["derive"]
 
